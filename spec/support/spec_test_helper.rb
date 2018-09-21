@@ -1,6 +1,6 @@
 module SpecTestHelper
+  # Initiazing users using faker gem
   def initialize_user
-    # Initiazing users using faker gem
     User.new(user_attributes)
   end
 
@@ -13,5 +13,8 @@ module SpecTestHelper
     }
   end
 
+  def json
+    JSON.parse(response.body)
+  end
   
 end

@@ -1,4 +1,7 @@
 class Api::V1::UsersController < ApplicationController
+  include ExceptionHandler
+  include RenderResponse
+
   # fetching user
   before_action :get_user, only: [:show, :destroy]
 
@@ -12,11 +15,9 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def create
-    user = User.new(configure_user_params)
-    if user.save
-      render_response(user, I18n.t("user.created"))
-    else
-      render_response(user.errors, I18n.t("user.error"), I18n.t("app.error"), :unprocessable_entity)
+    @user = User.new(configure_user_params)
+    if @user.save!
+      render_response(@user, I18n.t("user.created"), I18n.t("app.success"), :created)
     end
   end
 
@@ -31,19 +32,6 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def get_user
-    @user = User.find_by(id: params[:id])
-    render_response([], I18n.t("user.not_found"), I18n.t("app.error")) and return if @user.nil?
-  end
-
-  def render_response(data, msg, status = I18n.t("app.success"), res_status = :ok, total_pgs=nil)
-    respns = {
-              status:   status, 
-              message:  msg, 
-              data:     data
-            }
-
-    respns.merge!({total_pages: total_pgs}) if total_pgs
-    render json: respns, status: res_status
-  end
-  
+    @user = User.find_by!(id: params[:id])
+  end  
 end

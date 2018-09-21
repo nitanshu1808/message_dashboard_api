@@ -2,39 +2,72 @@ require 'rails_helper'
 
 RSpec.describe Api::V1::UsersController, type: :controller do
 
+  let!(:users)  { create_list(:user, 15) }
+  let(:user_id) { users.first.id }
+
   describe "GET #index" do
 
-    before do
-      15.times do
-        user = initialize_user
-        user.save
+    context "returns user" do
+      # make HTTP get request before every test case
+      before { get 'index' }
+
+      it "returns http success" do
+        expect(response).to have_http_status(:success)
+      end
+
+      it "return users" do
+        expect(json).not_to be_empty
+        expect(json['data'].size).to eq(10)
+        expect(json['message']).to eq(I18n.t("user.load"))
+      end
+
+      it 'returns status code 200' do
+        expect(response).to have_http_status(200)
       end
     end
 
-    it "returns http success" do
-      expect(response).to have_http_status(:success)
+    context "when record doesn't exist" do
+      before { get 'index', params: {page: 3} }
+
+      it 'returns blank array' do
+        expect(json['data']).to eq([])
+      end
+    end
+  end
+
+  describe "GET /users/:id" do
+
+    before { get :show, params: {id: user_id} }
+
+    context 'when the record exists' do
+
+      it 'returns the user' do
+        expect(json).not_to be_empty
+        expect(json['data']['id']).to eq(user_id)
+        expect(json['message']).to eq(I18n.t("user.find"))
+      end
+
+      it 'returns status code 200' do
+        expect(response).to have_http_status(200)
+      end
+
     end
 
-    it "verifies records returned" do
+    context 'when the record does not exist' do
+      let(:user_id) { 300 }
 
-      get :index, format: :json
+      it 'returns status code 404' do
+        expect(response).to have_http_status(404)
+      end
 
-      parsed_response = JSON.parse(response.body)
-
-      expect(parsed_response['data'].length).to eq(10)
-
-      expect(parsed_response['message']).to eq(I18n.t("user.load"))
-    end
-
-    it "returns [] if no record is found" do
-      get :index, format: :json
-      users = User.page(3)
-      expect(users).to eq([])
+      it 'returns a not found message' do
+        expect(response.body).to match(I18n.t("user.not_found"))
+      end
     end
 
   end
 
-  describe "Post #create" do
+  describe "Post #create user" do
 
     let(:valid_params) do
       {
@@ -42,48 +75,45 @@ RSpec.describe Api::V1::UsersController, type: :controller do
       }
     end
 
+    context 'when request attributes are valid' do
+      before { post :create, params: valid_params }
 
-    it "verifies record created" do
-      post :create, params: valid_params
-      parsed_response = JSON.parse(response.body)
-      expect(parsed_response['message']).to eq(I18n.t("user.created"))
+      it 'returns status code 201' do
+        expect(response).to have_http_status(201)
+      end
+
+      it "verifies record created" do
+        expect(json['message']).to eq(I18n.t("user.created"))
+      end
     end
 
-    it "verifies error while creating record" do
-      post :create, params: {}
-      parsed_response = JSON.parse(response.body)
-      expect(parsed_response['message']).to eq(I18n.t("user.error"))
-    end
-  end
 
-  describe "Post #destroy" do
+    context 'when an invalid request' do
+      before { post :create, params: {} }
 
-    before do
-      @user = initialize_user
-      @user.save
-    end
+      it 'returns status code 422' do
+        expect(response).to have_http_status(422)
+      end
 
-    it "deletes a record" do
-      delete :destroy, params: {id: @user.id}
-      parsed_response = JSON.parse(response.body)
-      expect(parsed_response['message']).to eq(I18n.t("user.delete"))
-      expect(User.find_by(id: @user.id)).to eq(nil)
+      it "error while creating record" do
+        expect(json['message']).to eq(I18n.t("user.error"))
+      end
     end
 
   end
 
-  describe "Fetch user" do
-    before do
-      @user = initialize_user
-      @user.save
-    end
+  describe "Delete User#destroy" do
 
-    it "retrieves a record" do
-      get :show, params: {id: @user.id}
-      parsed_response = JSON.parse(response.body)
-      expect(parsed_response['message']).to eq(I18n.t("user.find"))
-    end
+    context 'deletes a user' do
+      before { delete :destroy, params: {id: user_id} }
+      let(:user_id) { users.last.id }
 
+      it "deletes a record" do
+        expect(json['message']).to eq(I18n.t("user.delete"))
+        expect(User.find_by(id: user_id)).to eq(nil)
+      end
+
+    end
   end
 
 end
