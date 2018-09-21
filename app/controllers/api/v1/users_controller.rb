@@ -1,4 +1,6 @@
 class Api::V1::UsersController < ApplicationController
+  # retrieves, creates and destroys user in json format
+
   include ExceptionHandler
   include RenderResponse
 
@@ -33,5 +35,5 @@ class Api::V1::UsersController < ApplicationController
 
   def get_user
     @user = User.find_by!(id: params[:id])
-  end  
+  end
 end

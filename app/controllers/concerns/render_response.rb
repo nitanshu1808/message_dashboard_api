@@ -3,8 +3,8 @@ module RenderResponse
 
   def render_response(data, msg, status = I18n.t("app.success"), res_status = :ok, total_pgs=nil)
     respns = {
-              status:   status, 
-              message:  msg, 
+              status:   status,
+              message:  msg,
               data:     data
             }
 
@@ -13,4 +13,3 @@ module RenderResponse
   end
 
 end
-  

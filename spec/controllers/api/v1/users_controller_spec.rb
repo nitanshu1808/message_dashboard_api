@@ -15,10 +15,13 @@ RSpec.describe Api::V1::UsersController, type: :controller do
         expect(response).to have_http_status(:success)
       end
 
-      it "return users" do
+      it "verifies user load message" do
+        expect(json['message']).to eq(I18n.t("user.load"))
+      end
+
+      it "verifies record presence" do
         expect(json).not_to be_empty
         expect(json['data'].size).to eq(10)
-        expect(json['message']).to eq(I18n.t("user.load"))
       end
 
       it 'returns status code 200' do
@@ -41,10 +44,13 @@ RSpec.describe Api::V1::UsersController, type: :controller do
 
     context 'when the record exists' do
 
-      it 'returns the user' do
+      it 'found user' do
+        expect(json['message']).to eq(I18n.t("user.find"))
+      end
+
+      it 'verifies record presence' do
         expect(json).not_to be_empty
         expect(json['data']['id']).to eq(user_id)
-        expect(json['message']).to eq(I18n.t("user.find"))
       end
 
       it 'returns status code 200' do
@@ -69,13 +75,8 @@ RSpec.describe Api::V1::UsersController, type: :controller do
 
   describe "Post #create user" do
 
-    let(:valid_params) do
-      {
-         user: user_attributes
-      }
-    end
-
     context 'when request attributes are valid' do
+      let(:valid_params) do {  user: build(:user).attributes } end
       before { post :create, params: valid_params }
 
       it 'returns status code 201' do
