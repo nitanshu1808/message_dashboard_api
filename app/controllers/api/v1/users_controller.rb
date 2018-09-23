@@ -8,7 +8,10 @@ class Api::V1::UsersController < ApplicationController
   before_action :get_user, only: [:show, :destroy]
 
   def index
-    users = User.page( params[:page])
+    #fetching users
+    users = User.filter_records(params["filter"]).sort_by_field(field).page( params[:page]) if params["filter"]
+    users = users || User.sort_by_field(field).page( params[:page])
+    # render response
     render_response(users, I18n.t("user.load"), I18n.t("app.success"), :ok, users.total_pages)
   end
 
@@ -35,5 +38,9 @@ class Api::V1::UsersController < ApplicationController
 
   def get_user
     @user = User.find_by!(id: params[:id])
+  end
+
+  def field
+    params["sort"] && (params["sort"] == "first_name" ? "lower(first_name)" : "#{params["sort"]} desc") || 'created_at desc'
   end
 end
