@@ -19,7 +19,7 @@ class User < ApplicationRecord
       range     = (data.split("-")[0].strip..data.split("-")[1].strip).to_a
       (data.split("-")[0].strip..data.split("-")[1].strip).to_a.each do |char|
         condition << "last_name ILIKE ?"
-        params    << "%#{char}"
+        params    << "#{char}%"
       end
       where(condition.join(' OR '), *params)
     end

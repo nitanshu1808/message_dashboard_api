@@ -8,7 +8,7 @@ module ExceptionHandler
     end
 
     rescue_from ActiveRecord::RecordInvalid do |e|
-      render_response(@user.errors, I18n.t("user.error"), I18n.t("app.error"), :unprocessable_entity)
+      render_response(@user.errors.full_messages, I18n.t("user.error"), I18n.t("app.error"), :ok)
     end
   end
 end

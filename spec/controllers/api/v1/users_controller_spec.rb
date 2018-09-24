@@ -92,8 +92,8 @@ RSpec.describe Api::V1::UsersController, type: :controller do
     context 'when an invalid request' do
       before { post :create, params: {} }
 
-      it 'returns status code 422' do
-        expect(response).to have_http_status(422)
+      it 'returns status code 200' do
+        expect(response).to have_http_status(200)
       end
 
       it "error while creating record" do
